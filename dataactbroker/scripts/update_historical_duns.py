@@ -177,7 +177,7 @@ def main():
     start = datetime.now()
     if CONFIG_BROKER["use_aws"]:
         s3_client = boto3.client('s3', region_name=CONFIG_BROKER['aws_region'])
-        duns_file = s3_client.generate_presigned_url('get_object', {'Bucket': CONFIG_BROKER['archive_bucket'],
+        duns_file = s3_client.generate_presigned_url('get_object', {'Bucket': "da-public-files",
                                                                     'Key': "DUNS_export_deduped.csv"}, ExpiresIn=10000)
     else:
         duns_file = os.path.join(CONFIG_BROKER["broker_files"], "DUNS_export_deduped.csv")
