@@ -271,8 +271,8 @@ def cleanup(sig, frame):
         for message in current_messages:
             deleted_message = message.delete()
             log_to_mount_drive('DELETED MESSAGE:{}'.format(deleted_message))
-            retried_messaged = retry_message(queue, message)
-            log_to_mount_drive('RETRIED MESSAGE:{}'.format(retried_messaged))
+            # retried_messaged = retry_message(queue, message)
+            # log_to_mount_drive('RETRIED MESSAGE:{}'.format(retried_messaged))
         sys.exit(0)
 
 
