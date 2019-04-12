@@ -266,7 +266,7 @@ def cleanup(sig, frame):
 
         log_to_mount_drive('Unexpected shutdown (SIG: {}). Cleaning up current messages.'.format(sig))
 
-        time.sleep(3)
+        time.sleep(10)
 
         queue = sqs_queue()
 
