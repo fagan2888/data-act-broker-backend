@@ -36,13 +36,6 @@ READY_STATUSES = [JOB_STATUS_DICT['waiting'], JOB_STATUS_DICT['ready']]
 RUNNING_STATUSES = READY_STATUSES + [JOB_STATUS_DICT['running']]
 RETRY_MESSAGE_DELAY = 60*2  # 2 minutes
 
-MOUNT_DRIVE = os.path.join(CONFIG_BROKER['path'], 'results_drive')
-
-def log_to_mount_drive(message):
-    logger.info(message)
-    # with open(os.path.join(MOUNT_DRIVE, 'app.log'), 'a') as app_log:
-    #     app_log.write('{}-{}:{}\n'.format(time.time(), os.getpid(), message))
-
 
 def create_app():
     return Flask(__name__)
@@ -80,7 +73,7 @@ def run_app():
             messages = queue.receive_messages(WaitTimeSeconds=10, MessageAttributeNames=['All'])
             current_messages = messages
             for message in messages:
-                log_to_mount_drive("Message received: {}".format(message.body))
+                logger.info("Message received: {}".format(message.body))
 
                 msg_attr = message.message_attributes
                 cleanup_flag = (msg_attr and msg_attr.get('cleanup_flag', {}).get('StringValue') == '1')
@@ -265,15 +258,15 @@ def cleanup(sig, frame):
     if not exited:
         exited = True
 
-        log_to_mount_drive('Unexpected shutdown (SIG: {}). Cleaning up current messages.'.format(sig))
+        logger.info('Unexpected shutdown (SIG: {}). Cleaning up current messages.'.format(sig))
 
         queue = sqs_queue()
 
         for message in current_messages:
             deleted_message = message.delete()
-            log_to_mount_drive('DELETED MESSAGE:{}'.format(deleted_message))
+            logger.info('DELETED MESSAGE:{}'.format(deleted_message))
             retried_messaged = retry_message(queue, message)
-            log_to_mount_drive('RETRIED MESSAGE:{}'.format(retried_messaged))
+            logger.info('RETRIED MESSAGE:{}'.format(retried_messaged))
         sys.exit(0)
 
 
@@ -291,7 +284,7 @@ def retry_message(queue, message):
     if not message_attr:
         message_attr = {}
     message_attr['cleanup_flag'] = {"DataType": "String", 'StringValue': '1'}
-    log_to_mount_drive('Message Attributes: {}'.format(message_attr))
+    logger.info('Message Attributes: {}'.format(message_attr))
     return queue.send_message(MessageBody=message.body, MessageAttributes=message_attr,
                               DelaySeconds=RETRY_MESSAGE_DELAY)
 
@@ -321,7 +314,7 @@ def cleanup_generation(file_gen_id):
             sess.commit()
 
     if retry:
-        log_to_mount_drive('Retrying file generation: {}'.format(file_gen_id))
+        logger.info('Retrying file generation: {}'.format(file_gen_id))
     return retry
 
 
@@ -345,7 +338,7 @@ def cleanup_validation(job_id):
         retry = True
 
     if retry:
-        log_to_mount_drive('Retrying validation: {}'.format(job_id))
+        logger.info('Retrying validation: {}'.format(job_id))
     return retry
 
 
