@@ -39,9 +39,9 @@ RETRY_MESSAGE_DELAY = 60*2  # 2 minutes
 MOUNT_DRIVE = os.path.join(CONFIG_BROKER['path'], 'results_drive')
 
 def log_to_mount_drive(message):
-    # logger.info(message)
-    with open(os.path.join(MOUNT_DRIVE, 'app.log'), 'a') as app_log:
-        app_log.write('{}-{}:{}\n'.format(time.time(), os.getpid(), message))
+    logger.info(message)
+    # with open(os.path.join(MOUNT_DRIVE, 'app.log'), 'a') as app_log:
+    #     app_log.write('{}-{}:{}\n'.format(time.time(), os.getpid(), message))
 
 
 def create_app():
