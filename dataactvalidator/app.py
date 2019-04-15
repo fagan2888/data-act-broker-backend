@@ -4,7 +4,6 @@ import time
 import traceback
 import signal
 import sys
-import os
 
 from flask import Flask, g, current_app
 
@@ -73,7 +72,7 @@ def run_app():
             messages = queue.receive_messages(WaitTimeSeconds=10, MessageAttributeNames=['All'])
             current_messages = messages
             for message in messages:
-                logger.info("Message received: {}".format(message.body))
+                logger.info("Message received: %s", message.body)
 
                 msg_attr = message.message_attributes
                 cleanup_flag = (msg_attr and msg_attr.get('cleanup_flag', {}).get('StringValue') == '1')
@@ -252,6 +251,10 @@ def validator_process_job(job_id, agency_code):
 def cleanup(sig, frame):
     """ This should only occur when the validator receives an unexpected signal to shutdown. On said signal, it simply
         re-enqueues the current messages with a cleanup_flag for another validator (current or future) to pick up.
+
+        Args:
+            sig: signal received
+            frame: stack frame at that moment
     """
     global current_messages, exited
 
@@ -263,10 +266,8 @@ def cleanup(sig, frame):
         queue = sqs_queue()
 
         for message in current_messages:
-            deleted_message = message.delete()
-            logger.info('DELETED MESSAGE:{}'.format(deleted_message))
-            retried_messaged = retry_message(queue, message)
-            logger.info('RETRIED MESSAGE:{}'.format(retried_messaged))
+            message.delete()
+            retry_message(queue, message)
         sys.exit(0)
 
 
