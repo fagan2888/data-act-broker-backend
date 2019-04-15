@@ -34,6 +34,7 @@ current_messages = []
 exited = False
 READY_STATUSES = [JOB_STATUS_DICT['waiting'], JOB_STATUS_DICT['ready']]
 RUNNING_STATUSES = READY_STATUSES + [JOB_STATUS_DICT['running']]
+RETRY_MESSAGE_DELAY = 60*2  # 2 minutes
 
 MOUNT_DRIVE = os.path.join(CONFIG_BROKER['path'], 'results_drive')
 
@@ -266,8 +267,6 @@ def cleanup(sig, frame):
 
         log_to_mount_drive('Unexpected shutdown (SIG: {}). Cleaning up current messages.'.format(sig))
 
-        time.sleep(15)
-
         queue = sqs_queue()
 
         for message in current_messages:
@@ -293,7 +292,8 @@ def retry_message(queue, message):
         message_attr = {}
     message_attr['cleanup_flag'] = {"DataType": "String", 'StringValue': '1'}
     log_to_mount_drive('Message Attributes: {}'.format(message_attr))
-    return queue.send_message(MessageBody=message.body, MessageAttributes=message_attr)
+    return queue.send_message(MessageBody=message.body, MessageAttributes=message_attr,
+                              DelaySeconds=RETRY_MESSAGE_DELAY)
 
 
 def cleanup_generation(file_gen_id):
