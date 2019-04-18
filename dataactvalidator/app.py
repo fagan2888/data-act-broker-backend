@@ -183,7 +183,6 @@ def validator_process_job(job_id, agency_code):
                                     StatusCode.CLIENT_ERROR, None, validation_error_type)
 
         mark_job_status(job_id, 'ready')
-        time.sleep(60*3)
 
         # We can either validate or generate a file based on Job ID
         if job.job_type.name == 'file_upload':
