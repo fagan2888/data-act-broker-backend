@@ -1,4 +1,4 @@
-import argparse
+        import argparse
 import logging
 
 from dataactcore.interfaces.db import GlobalDB
@@ -29,7 +29,7 @@ if __name__ == '__main__':
                 logger.info('Running SQL:')
                 logger.info(sql)
 
-                sql = sql.replace('\n', ' ')
+                sql.replace('\n', ' ')
                 sess = GlobalDB.db().session
                 executed = sess.execute(sql)
                 sess.commit()
