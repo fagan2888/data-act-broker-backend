@@ -1,4 +1,4 @@
-        import argparse
+import argparse
 import logging
 
 from dataactcore.interfaces.db import GlobalDB
