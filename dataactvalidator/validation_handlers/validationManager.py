@@ -48,7 +48,8 @@ CHUNK_SIZE = 1024
 
 class ValidationManager:
     """ Outer level class, called by flask route """
-    reportHeaders = ["Field name", "Error message", "Row number", "Value provided", "Rule label"]
+    reportHeaders = ["Validation Rule Number", "Validation Rule Detail", "Row number", "Value Provided",
+                     "Target Value from Authoritative Source"]
     crossFileReportHeaders = ["Source File", "Target File", "Field names", "Error message", "Values provided",
                               "Row number", "Rule label"]
 
@@ -125,7 +126,7 @@ class ValidationManager:
                 # Don't count last row if empty
                 reduce_row = True
             else:
-                writer.writerow(["Formatting Error", ValidationError.readErrorMsg, str(row_number), ""])
+                writer.writerow(["", ValidationError.readErrorMsg, str(row_number), "Formatting Error", ""])
                 error_list.record_row_error(job_id, job.filename, "Formatting Error", ValidationError.readError,
                                             row_number, severity_id=RULE_SEVERITY_DICT['fatal'])
                 row_error_found = True
@@ -384,10 +385,9 @@ class ValidationManager:
 
                 if file_type in ('appropriations', 'program_activity', 'award_financial'):
                     update_tas_ids(model, submission_id)
-                #
-                # third phase of validations: run validation rules as specified
-                # in the schema guidance. these validations are sql-based.
-                #
+
+                # third phase of validations: run validation rules as specified in the schema guidance. These
+                # validations are sql-based.
                 sql_error_rows = self.run_sql_validations(job, file_type, self.short_to_long_dict[job.file_type_id],
                                                           error_csv, warning_csv, row_number, error_list)
                 error_rows.extend(sql_error_rows)
@@ -518,11 +518,12 @@ class ValidationManager:
                 error_msg = failure.error
 
             if failure.severity_id == RULE_SEVERITY_DICT['fatal']:
-                writer.writerow([field_name, error_msg, str(failure.row), failure.failed_value, failure.original_label])
+                writer.writerow([failure.original_label, error_msg, str(failure.row), failure.failed_value,
+                                 "Target value goes here"])
             elif failure.severity_id == RULE_SEVERITY_DICT['warning']:
                 # write to warnings file
-                warning_writer.writerow([field_name, error_msg, str(failure.row), failure.failed_value,
-                                         failure.original_label])
+                warning_writer.writerow([failure.original_label, error_msg, str(failure.row), failure.failed_value,
+                                         "Target value goes here"])
             error_list.record_row_error(job_id, job.filename, field_name, failure.error, row_number,
                                         failure.original_label, failure.file_type_id, failure.target_file_id,
                                         failure.severity_id)
@@ -722,7 +723,7 @@ def insert_staging_model(model, job, writer, error_list):
     except SQLAlchemyError:
         sess.rollback()
         # Write failed, move to next record
-        writer.writerow(["Formatting Error", ValidationError.writeErrorMsg, model.row_number, ""])
+        writer.writerow(["", ValidationError.readErrorMsg, model.row_number, "Formatting Error", ""])
         error_list.record_row_error(job.job_id, job.filename, "Formatting Error", ValidationError.writeError,
                                     model.row_number, severity_id=RULE_SEVERITY_DICT['fatal'])
         return False
@@ -786,10 +787,10 @@ def write_errors(failures, job, short_colnames, writer, warning_writer, row_numb
         fail_value = ", ".join(flex_list)
         if failure.severity == 'fatal':
             fatal_error_found = True
-            writer.writerow([combined_field_names, error_msg, str(row_number), fail_value, failure.label])
+            writer.writerow([failure.label, error_msg, str(row_number), fail_value, "Target value goes here"])
         elif failure.severity == 'warning':
             # write to warnings file
-            warning_writer.writerow([combined_field_names, error_msg, str(row_number), fail_value, failure.label])
+            warning_writer.writerow([failure.label, error_msg, str(row_number), fail_value, "Target value goes here"])
         error_list.record_row_error(job.job_id, job.filename, combined_field_names, failure.description, row_number,
                                     failure.label, severity_id=severity_id)
     return fatal_error_found
