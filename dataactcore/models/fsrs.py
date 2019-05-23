@@ -75,6 +75,7 @@ class _PrimeAwardAttributes:
     date_submitted = Column(DateTime)
     report_period_mon = Column(String)
     report_period_year = Column(String)
+    unique_award_key = Column(String)
 
     @classmethod
     def next_id(cls, sess):
