@@ -339,6 +339,8 @@ def main():
     # Handle the export office parameter
     export_office = args.export_office[0] if args.export_office else None
 
+    sess.execute('LOCK TABLES office READ;')
+
     # Handle a complete data reload
     if args.all and not args.ignore_db:
         logger.info('Emptying out the Office table for a complete reload.')
@@ -349,6 +351,8 @@ def main():
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)
+
+    sess.execute('UNLOCK TABLES;')
 
     # find if there were any new cgacs/subtiers added
     all_cgacs = [cgac.cgac_code for cgac in sess.query(CGAC.cgac_code)]
