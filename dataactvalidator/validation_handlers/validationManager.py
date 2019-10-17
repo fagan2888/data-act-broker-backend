@@ -732,10 +732,12 @@ def insert_staging_model(model, job, writer, error_list):
         True if insertion was a success, False otherwise
     """
     sess = GlobalDB.db().session
+    logger.info(model)
     try:
         sess.add(model)
         sess.commit()
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        logger.exception(e)
         sess.rollback()
         # Write failed, move to next record
         writer.writerow(['Formatting Error', ValidationError.writeErrorMsg, '', '', '', '', model.row_number, ''])
