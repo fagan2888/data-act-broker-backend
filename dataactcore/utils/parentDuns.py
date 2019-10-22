@@ -56,6 +56,7 @@ def get_duns_props_from_sam(client, duns_list):
         'executive_comp_data': 'coreData.listOfExecutiveCompensationInformation'
     }
     duns_props = []
+    duns_returned = []
     for suds_obj in get_entities(client, duns_list):
         duns_props_dict = {}
         for duns_props_name, duns_prop_path in duns_props_mappings.items():
@@ -78,6 +79,10 @@ def get_duns_props_from_sam(client, duns_list):
                     duns_props_dict['high_comp_officer{}_amount'.format(index)] = str(exec_comp.compensation)
                 continue
             duns_props_dict[duns_props_name] = value
+        if duns_props_dict['awardee_or_recipient_uniqu'] in duns_returned:
+            logger.info('found dup duns: {}'.format(duns_props_dict['awardee_or_recipient_uniqu']))
+        else:
+            duns_returned.append(duns_props_dict['awardee_or_recipient_uniqu'])
         duns_props.append(duns_props_dict)
 
     return pd.DataFrame(duns_props)
