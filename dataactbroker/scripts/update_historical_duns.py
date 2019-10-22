@@ -148,7 +148,8 @@ def run_duns_batches(file, sess, client, block_size=10000):
         # Remove rows where awardee_or_recipient_uniqu is null
         duns_df = duns_df[duns_df['awardee_or_recipient_uniqu'].notnull()]
         # Ignore old DUNS we already have
-        duns_to_load = remove_existing_duns(duns_df, sess)
+        # duns_to_load = remove_existing_duns(duns_df, sess)
+        duns_to_load = duns_df
 
         if not duns_to_load.empty:
             logger.info("Adding {} DUNS records from historic data".format(len(duns_to_load.index)))
