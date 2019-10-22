@@ -66,7 +66,7 @@ def remove_existing_duns(data, sess):
 
     duns_in_file = ",".join(list(data['awardee_or_recipient_uniqu'].unique()))
     sql_query = "SELECT awardee_or_recipient_uniqu " +\
-                "FROM duns where awardee_or_recipient_uniqu = ANY('{" + \
+                "FROM duns WHERE historic = FALSE AND awardee_or_recipient_uniqu = ANY('{" + \
                 duns_in_file +\
                 "}')"
 
@@ -159,8 +159,8 @@ def run_duns_batches(file, sess, client, block_size=10000):
             duns_to_load = clean_data(duns_to_load, HistoricDUNS, column_mappings, {})
             duns_added += len(duns_to_load.index)
 
-            insert_dataframe(duns_to_load, HistoricDUNS.__table__.name, sess.connection())
-            sess.commit()
+            # insert_dataframe(duns_to_load, HistoricDUNS.__table__.name, sess.connection())
+            # sess.commit()
 
             logger.info("Finished updating {} DUNS rows in {} s".format(len(duns_to_load.index),
                                                                         (datetime.now()-start).total_seconds()))
@@ -310,7 +310,7 @@ def main():
         clean_historic_duns(sess)
 
     # import the historic duns to the current DUNS table
-    import_historic_duns(sess)
+    # import_historic_duns(sess)
 
     sess.close()
     logger.info("Updating historical DUNS complete")
